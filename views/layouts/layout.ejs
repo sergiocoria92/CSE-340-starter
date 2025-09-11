@@ -1,17 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <%- include('../partials/head') %>
+  <head>
+    <%- include('../partials/head') %>
+  </head>
   <body>
-    <div id="wrapper">
+    <header class="site-header">
       <%- include('../partials/header') %>
+      <%- include('../partials/navigation', { active: 'home' }) %>
+    </header>
 
-      <%- include('../partials/navigation') %>
+    <main id="main">
+      <%- body %>
+    </main>
 
-      <main>
-        <%- body %>
-      </main>
-
+    <footer class="site-footer">
       <%- include('../partials/footer') %>
-    </div>
+    </footer>
   </body>
 </html>

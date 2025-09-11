@@ -1,9 +1,11 @@
-<nav>
-  <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="#">Custom</a></li>
-    <li><a href="#">Sedan</a></li>
-    <li><a href="#">SUV</a></li>
-    <li><a href="#">Truck</a></li>
-  </ul>
+<nav class="main-nav" aria-label="Main">
+  <div class="wrap">
+    <ul>
+      <li><a href="/" aria-current="<%= active === 'home' ? 'page' : false %>">Home</a></li>
+      <li><a href="#">Custom</a></li>
+      <li><a href="#">Sedan</a></li>
+      <li><a href="#">SUV</a></li>
+      <li><a href="#">Truck</a></li>
+    </ul>
+  </div>
 </nav>
