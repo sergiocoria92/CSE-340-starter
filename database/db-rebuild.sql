@@ -43,7 +43,8 @@ CREATE TABLE inventory (
 INSERT INTO classification (classification_name)
 VALUES ('Sport'), ('SUV'), ('Sedan');
 
-INSERT INTO inventory (inv_make, inv_model, inv_description, inv_image, inv_thumbnail, inv_price, inv_miles, inv_color, classification_id)
+INSERT INTO inventory
+  (inv_make, inv_model, inv_description, inv_image, inv_thumbnail, inv_price, inv_miles, inv_color, classification_id)
 VALUES
   ('Ford','Mustang',
    'Classic sport coupe with agile handling.',
@@ -54,14 +55,15 @@ VALUES
    '/images/corvette.jpg','/images/corvette-tn.jpg', 72000.00, 5000, 'Blue',
    (SELECT classification_id FROM classification WHERE classification_name='Sport'));
 
-INSERT INTO inventory (inv_make, inv_model, inv_description, inv_image, inv_thumbnail, inv_price, inv_miles, inv_color, classification_id)
+INSERT INTO inventory
+  (inv_make, inv_model, inv_description, inv_image, inv_thumbnail, inv_price, inv_miles, inv_color, classification_id)
 VALUES
   ('GM','Hummer',
    'Rugged off-road capability but noted for small interiors in this trim.',
    '/images/hummer.jpg','/images/hummer-tn.jpg', 88000.00, 12000, 'Black',
    (SELECT classification_id FROM classification WHERE classification_name='SUV'));
 
--- 5) ÚLTIMO: copias de #4 y #6 del Task 1
+-- 5) Cambios requeridos por el Task 1 (puedes dejarlos aquí o en assignment2.sql)
 UPDATE inventory
 SET inv_description = REPLACE(inv_description, 'small interiors', 'a huge interior')
 WHERE inv_make = 'GM' AND inv_model = 'Hummer';
@@ -69,5 +71,4 @@ WHERE inv_make = 'GM' AND inv_model = 'Hummer';
 UPDATE inventory
 SET
   inv_image = REPLACE(inv_image, '/images/', '/images/vehicles/'),
-  inv_thumbnail = REPLACE(inv_thumbnail, '/images/', '/images/vehicles/')
-WHERE inv_image NOT LIKE '%/images/vehicles/%' OR inv_thumbnail NOT LIKE '%/images/vehicles/%';
+  inv_thumbnail = REPLACE(inv_thumbnail, '/images/', '/images/vehicles/');

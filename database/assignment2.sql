@@ -1,38 +1,31 @@
--- assignment2.sql
--- CSE 340 - Assignment 2 (Task 1)
--- IMPORTANT: Each task uses a SINGLE query.
+-- /database/assignment2.sql
+-- Task 1 - TODAS las sentencias en UN SOLO archivo
 
--- 1) INSERT Tony Stark (sin account_id ni account_type)
+-- 2) Tony Stark - INSERT
 INSERT INTO account (account_firstname, account_lastname, account_email, account_password)
-VALUES ('Tony','Stark','tony@starkent.com','Iam1IronM@n');
+VALUES ('Tony','Stark','tony@starkindustries.com','IAmIronman');
 
--- 2) UPDATE Tony Stark a Admin (usa PK vía subconsulta)
+-- 3) Tony Stark - UPDATE (ej.: cambia email)
 UPDATE account
-SET account_type = 'Admin'
-WHERE account_id = (
-  SELECT account_id FROM account WHERE account_email = 'tony@starkent.com'
-);
+SET account_email = 'tony@avengers.org'
+WHERE account_firstname = 'Tony' AND account_lastname = 'Stark';
 
--- 3) DELETE Tony Stark (usa PK vía subconsulta)
+-- 4) Tony Stark - DELETE
 DELETE FROM account
-WHERE account_id = (
-  SELECT account_id FROM account WHERE account_email = 'tony@starkent.com'
-);
+WHERE account_firstname = 'Tony' AND account_lastname = 'Stark';
 
--- 4) REPLACE en la descripción del GM Hummer (NO reescribas todo el texto)
+-- 5) Descripción Hummer debe contener "a huge interior"
 UPDATE inventory
 SET inv_description = REPLACE(inv_description, 'small interiors', 'a huge interior')
-WHERE inv_make = 'GM' AND inv_model = 'Hummer';
+WHERE inv_make='GM' AND inv_model='Hummer';
 
--- 5) INNER JOIN para items de la clasificación 'Sport' (deben salir 2 filas)
+-- 6) SELECT con JOIN: para 'Sport' deben salir 2 filas (Mustang y Corvette)
 SELECT i.inv_make, i.inv_model, c.classification_name
 FROM inventory i
-INNER JOIN classification c ON i.classification_id = c.classification_id
-WHERE c.classification_name = 'Sport';
+JOIN classification c ON i.classification_id = c.classification_id
+WHERE c.classification_name='Sport';
 
--- 6) Actualiza rutas para incluir '/vehicles' (formato: /images/vehicles/a-car-name.jpg)
+-- 7) Actualiza inv_image e inv_thumbnail al nuevo prefijo
 UPDATE inventory
-SET
-  inv_image = REPLACE(inv_image, '/images/', '/images/vehicles/'),
-  inv_thumbnail = REPLACE(inv_thumbnail, '/images/', '/images/vehicles/')
-WHERE inv_image NOT LIKE '%/images/vehicles/%' OR inv_thumbnail NOT LIKE '%/images/vehicles/%';
+SET inv_image     = REPLACE(inv_image,     '/images/', '/images/vehicles/'),
+    inv_thumbnail = REPLACE(inv_thumbnail, '/images/', '/images/vehicles/');
