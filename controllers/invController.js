@@ -1,26 +1,45 @@
-const invModel = require('../models/inventory-model')
+// controllers/invController.js
+const invModel = require("../models/inventory-model")
+const utilities = require("../utilities/")
 
-const invController = {}
+const invCont = {}
 
-invController.buildByClassificationId = async function (req, res, next) {
+/* ***************************
+ *  Build inventory by classification view
+ * ************************** */
+invCont.buildByClassificationId = async function (req, res, next) {
   try {
-    const classificationId = Number(req.params.classificationId)
-    if (!Number.isInteger(classificationId)) {
-      return res.status(400).send('Invalid classification id')
-    }
+    const classification_id = req.params.classificationId
+    const rows = await invModel.getInventoryByClassificationId(classification_id)
+    const grid = await utilities.buildClassificationGrid(rows)
+    const nav = await utilities.getNav()
+    const className = rows[0]?.classification_name || "Vehicles"
 
-    const { rows } = await invModel.getInventoryByClassificationId(classificationId)
-
-    // titulo amigable (opcional): si quieres el nombre de la clasificación, puedes consultarlo
-    const title = 'Vehicles'
-
-    res.render('inventory/classification', {
-      title,
-      vehicles: rows,
+    res.render("./inventory/classification", {
+      title: `${className} vehicles`,
+      nav,
+      grid,
     })
   } catch (err) {
     next(err)
   }
 }
 
-module.exports = invController
+/* ***************************
+ *  Build vehicle detail view
+ * ************************** */
+invCont.buildByInventoryId = async function (req, res, next) {
+  try {
+    const invId = req.params.invId
+    const vehicle = await invModel.getVehicleById(invId)
+    const detail = utilities.buildVehicleDetail(vehicle)
+    const nav = await utilities.getNav()
+    const title = vehicle ? `${vehicle.inv_make} ${vehicle.inv_model}` : "Vehicle"
+
+    res.render("./inventory/detail", { title, nav, detail })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = invCont

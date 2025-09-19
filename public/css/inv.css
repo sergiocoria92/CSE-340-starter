@@ -1,0 +1,7 @@
+.vehicle-detail{display:grid;gap:1rem;grid-template-columns:1fr}
+.vehicle-media img{width:100%;height:auto;border-radius:12px}
+.vehicle-info .price{font-weight:700;font-size:1.25rem}
+.vehicle-info .meta{list-style:none;padding:0;display:grid;gap:.25rem}
+@media(min-width:900px){
+  .vehicle-detail{grid-template-columns:1fr 1fr;align-items:start}
+}
