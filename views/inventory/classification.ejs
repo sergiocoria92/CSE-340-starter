@@ -1,0 +1,38 @@
+<%- include('../partials/flash') %> <% /* si no existe, no pasa nada */ %>
+
+<h1 class="page-title"><%= title %></h1>
+
+<section class="cards-grid">
+  <% if (!vehicles || vehicles.length === 0) { %>
+    <p>No vehicles found in this classification.</p>
+  <% } else { %>
+    <% vehicles.forEach(v => { %>
+      <article class="card">
+        <a class="card-link" href="/inv/detail/<%= v.inv_id %>">
+          <div class="thumb">
+            <% if (v.inv_thumbnail) { %>
+              <img src="<%= v.inv_thumbnail %>" alt="<%= v.inv_make %> <%= v.inv_model %> thumbnail">
+            <% } else { %>
+              <div class="thumb--placeholder">No image</div>
+            <% } %>
+          </div>
+          <div class="card-body">
+            <h2 class="card-title"><%= v.inv_year %> <%= v.inv_make %> <%= v.inv_model %></h2>
+            <p class="card-price">$<%= Number(v.inv_price || 0).toLocaleString() %></p>
+          </div>
+        </a>
+      </article>
+    <% }) %>
+  <% } %>
+</section>
+
+<style>
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+  .card{background:#fff;border-radius:12px;padding:.75rem;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .thumb{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;background:#f5f7fb;border-radius:8px;overflow:hidden}
+  .thumb img{max-width:100%;max-height:100%;display:block}
+  .thumb--placeholder{color:#667}
+  .card-title{font-size:1rem;margin:.5rem 0}
+  .card-price{font-weight:600}
+  .card-link{text-decoration:none;color:inherit;display:block}
+</style>
