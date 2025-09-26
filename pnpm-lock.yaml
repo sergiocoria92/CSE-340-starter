@@ -18,7 +18,7 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
       dotenv:
-        specifier: ^16.0.3
+        specifier: ^16.6.1
         version: 16.6.1
       ejs:
         specifier: ^3.1.10
@@ -39,7 +39,7 @@ importers:
         specifier: ^7.2.1
         version: 7.2.1
       pg:
-        specifier: ^8.8.0
+        specifier: ^8.16.3
         version: 8.16.3
     devDependencies:
       nodemon:

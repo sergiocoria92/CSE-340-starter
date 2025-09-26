@@ -1,0 +1,22 @@
+<main>
+  <h1>Add Classification</h1>
+
+  <% if (message && message.length) { %>
+    <div class="notice"><%= message %></div>
+  <% } %>
+
+  <% if (errors && errors.errors && errors.errors.length) { %>
+    <div class="errors"><ul>
+      <% errors.errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+    </ul></div>
+  <% } %>
+
+  <form method="post" action="/inv/add-classification" class="form">
+    <label for="classification_name">Classification Name</label>
+    <input id="classification_name" name="classification_name"
+           required pattern="^[A-Za-z0-9]+$"
+           title="Solo letras y números, sin espacios."
+           value="<%= classification_name || '' %>">
+    <button type="submit">Save</button>
+  </form>
+</main>
