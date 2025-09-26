@@ -99,3 +99,9 @@ a:focus-visible, .btn:focus-visible{
     grid-template-columns: repeat(2, minmax(240px, 1fr));
   }
 }
+
+/*flash*/
+.flash ul.messages { margin: 1rem 0; padding: 0; list-style: none; }
+.flash ul.messages li { padding: .75rem 1rem; border-radius: .5rem; margin-bottom: .5rem; }
+.flash ul.messages li.notice { background: #eef6ff; border: 1px solid #cde3ff; }
+.flash ul.messages li.error { background: #ffeef0; border: 1px solid #ffd0d6; }

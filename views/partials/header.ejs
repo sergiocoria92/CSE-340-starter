@@ -1,7 +1,12 @@
-
 <a class="skip-link" href="#main">Skip to content</a>
 
 <div class="wrap header-inner">
   <a class="brand" href="/">CSE Motors</a>
-  <a class="account-link" href="#" aria-label="My Account">My Account</a>
+  <a class="account-link"
+   href="<%= loggedin ? '/account/' : '/account/login' %>"
+   aria-label="My Account">My Account</a>
+
+  >
+    My Account
+  </a>
 </div>

@@ -28,13 +28,12 @@ Util.getNav = async function () {
 /* **************************************
  * Build the classification view HTML (grid)
  * ************************************ */
-// utilities/index.js
 Util.buildClassificationGrid = async function (data) {
   let grid
   if (data && data.length > 0) {
     grid = '<ul id="inv-display">'
     data.forEach((vehicle) => {
-      const thumb = vehicle.inv_thumbnail || '/images/vehicles/no-image-tn.png'
+      const thumb = vehicle.inv_thumbnail || "/images/vehicles/no-image-tn.png"
       grid += `<li>
         <a href="../../inv/detail/${vehicle.inv_id}" title="View ${vehicle.inv_make} ${vehicle.inv_model} details">
           <img src="${thumb}" alt="Image of ${vehicle.inv_make} ${vehicle.inv_model} on CSE Motors" />
@@ -56,7 +55,6 @@ Util.buildClassificationGrid = async function (data) {
   }
   return grid
 }
-
 
 /* **************************************
  * Build the vehicle detail HTML
@@ -85,5 +83,18 @@ Util.buildVehicleDetail = function (v) {
   </article>
   `
 }
+
+// Require login for protected routes
+Util.checkLogin = (req, res, next) => {
+  if (req.session?.loggedin) return next()
+  req.flash("notice", "Please log in to view that page.")
+  return res.redirect("/account/login")
+}
+
+//add the error handler middleware to the route
+// Wrap async route handlers to pass errors to next()
+Util.handleErrors = (fn) => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next)
+
 
 module.exports = Util

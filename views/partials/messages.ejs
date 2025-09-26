@@ -1,0 +1,7 @@
+<% if (typeof messages === 'function') { %>
+    <%- include('../partials/messages') %>
+
+  <div class="flash">
+   <%- messages() %>
+  </div>
+<% } %>

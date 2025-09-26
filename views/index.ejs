@@ -2,6 +2,11 @@
 
 <main id="main" class="wrap">
   <h1 class="page-title"><%= pageTitle %></h1>
+  <% if (typeof messages === 'function') { %>
+  <%- messages() %>
+<% } %>
+
+  <p>Welcome to CSE Motors.</p>
 
   <div class="hero">
     <article class="cta" aria-labelledby="model-title">
@@ -58,4 +63,5 @@
       </div>
     </section>
   </div>
+  
 </main>

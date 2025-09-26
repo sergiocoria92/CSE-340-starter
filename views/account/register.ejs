@@ -1,0 +1,67 @@
+<<h1><%= title %></h1>
+
+<% if (Array.isArray(errors) && errors.length) { %>
+  <div class="alert error">
+    <ul>
+      <% errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form action="/account/register" method="post" class="stack">
+  <!-- inputs con value="<%= account_firstname %>" etc. como ya los tienes -->
+</form>
+>
+
+
+
+<form action="/account/register" method="post" class="stack">
+  <label for="account_firstname">First name</label>
+  <input
+    id="account_firstname"
+    name="account_firstname"
+    type="text"
+    required
+    value="<%= typeof account_firstname !== 'undefined' ? account_firstname : '' %>"
+  />
+
+  <label for="account_lastname">Last name</label>
+  <input
+    id="account_lastname"
+    name="account_lastname"
+    type="text"
+    required
+    value="<%= typeof account_lastname !== 'undefined' ? account_lastname : '' %>"
+  />
+
+  <label for="account_email">Email</label>
+  <input
+    id="account_email"
+    name="account_email"
+    type="email"
+    required
+    placeholder="Enter a valid email address"
+    value="<%= typeof account_email !== 'undefined' ? account_email : '' %>"
+  />
+
+  <label for="account_password">Password</label>
+  <div id="pwdHelp" class="muted" aria-live="polite">
+    Passwords must be at least 12 characters and contain at least 1 number,
+    1 uppercase letter, and 1 special character.
+  </div>
+  <input
+    id="account_password"
+    name="account_password"
+    type="password"
+    required
+    aria-describedby="pwdHelp"
+    pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{12,}$"
+    placeholder="Enter a strong password"
+  />
+
+  <button type="submit">Create account</button>
+</form>
+
+<p class="muted">
+  Already have an account? <a href="/account/login">Back to login</a>
+</p>

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <%- include('../partials/head') %>
-  </head>
+  <head><%- include('../partials/head') %></head>
   <body>
     <header class="site-header">
       <%- include('../partials/header') %>
       <%- include('../partials/navigation') %>
     </header>
 
+    <!-- mensajes flash -->
+    <div class="container">
+      <%- messages() %>
+    </div>
 
-    <main id="main">
-      <%- body %>
-    </main>
+    <main id="main"><%- body %></main>
 
     <footer class="site-footer">
       <%- include('../partials/footer') %>
