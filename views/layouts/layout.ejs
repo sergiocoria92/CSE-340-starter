@@ -7,10 +7,12 @@
       <%- include('../partials/navigation') %>
     </header>
 
-    <!-- mensajes flash -->
-    <div class="container">
-      <%- messages() %>
-    </div>
+    <!-- mensajes flash (con guard para evitar ReferenceError) -->
+    <% if (typeof messages === 'function') { %>
+      <div class="container">
+        <%- messages() %>
+      </div>
+    <% } %>
 
     <main id="main"><%- body %></main>
 

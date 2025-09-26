@@ -6,7 +6,7 @@ const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
 const flash = require("connect-flash");
-const messages = require("express-messages");
+const expressMessages = require("express-messages"); // 👈 alias claro
 const PgSession = require("connect-pg-simple")(session);
 
 const pool = require("./database");
@@ -39,7 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 /* ===========================
- * Session & Flash (ANTES de poner locals)
+ * Session & Flash
  * =========================== */
 app.use(
   session({
@@ -62,12 +62,11 @@ app.use(
 app.use(flash());
 
 /* ===========================
- * Locals SIEMPRE definidos para las vistas
+ * Locals para TODAS las vistas (siempre definidos)
  * =========================== */
 app.use((req, res, next) => {
-  res.locals.messages = messages(req, res);
-  // valor por defecto para que nunca sea "undefined" en EJS
-  res.locals.loggedin = !!(req.session && req.session.loggedin);
+  res.locals.messages = expressMessages(req, res);          // 👈 función messages()
+  res.locals.loggedin = !!(req.session && req.session.loggedin); // 👈 booleano seguro
   next();
 });
 
@@ -120,9 +119,7 @@ async function ensureCoreSchema() {
     await pool.query("COMMIT");
     console.log("✓ Core DB schema ensured (classification, inventory, account)");
   } catch (err) {
-    try {
-      await pool.query("ROLLBACK");
-    } catch {}
+    try { await pool.query("ROLLBACK"); } catch {}
     console.error("DB bootstrap error:", err.message);
   }
 }
@@ -216,9 +213,7 @@ if (NODE_ENV !== "production") {
       await pool.query("COMMIT");
       res.send("DB rebuild OK ✅ — Tables and sample data are ready.");
     } catch (err) {
-      try {
-        await pool.query("ROLLBACK");
-      } catch {}
+      try { await pool.query("ROLLBACK"); } catch {}
       next(err);
     }
   });
