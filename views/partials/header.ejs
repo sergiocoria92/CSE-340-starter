@@ -2,10 +2,12 @@
 
 <div class="wrap header-inner">
   <a class="brand" href="/">CSE Motors</a>
-  <a class="account-link"
-   href="<%= loggedin ? '/account/' : '/account/login' %>"
-   aria-label="My Account">My Account</a>
 
+  <% const isLogged = (typeof loggedin === 'boolean') ? loggedin : false; %>
+  <a
+    class="account-link"
+    href="<%= isLogged ? '/account/' : '/account/login' %>"
+    aria-label="My Account"
   >
     My Account
   </a>
