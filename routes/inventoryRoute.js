@@ -1,81 +1,70 @@
 // routes/inventoryRoute.js
-const express = require('express')
+const express = require("express")
 const router = express.Router()
-const invController = require('../controllers/invController')
-const invValidate = require('../utilities/inventory-validation')
-const utilities = require('../utilities')
-const { checkLogin, requireRole } = require('../utilities/auth')
+const invController = require("../controllers/invController")
+const invValidate = require("../utilities/inventory-validation")
+const utilities = require("../utilities")
+const { checkLogin, requireRole } = require("../utilities/auth")
 
 // Público
-router.get(
-  '/type/:classificationId',
+router.get("/type/:classificationId",
   utilities.handleErrors(invController.buildByClassificationId)
 )
-router.get(
-  '/detail/:invId',
+router.get("/detail/:invId",
   utilities.handleErrors(invController.buildByInventoryId)
 )
 
-// Protegido (puedes activar roles si tu instructor lo pide)
-router.get(
-  '/',
+// Administración (protegido + rol)
+router.get("/",
   checkLogin,
-  // requireRole(['Admin', 'Employee']),
+  requireRole(["Employee", "Admin"]),
   utilities.handleErrors(invController.buildManagement)
 )
 
-router.get(
-  '/add-classification',
+router.get("/add-classification",
   checkLogin,
-  // requireRole(['Admin', 'Employee']),
+  requireRole(["Employee", "Admin"]),
   utilities.handleErrors(invController.buildAddClassification)
 )
-router.post(
-  '/add-classification',
+router.post("/add-classification",
   checkLogin,
-  // requireRole(['Admin', 'Employee']),
+  requireRole(["Employee", "Admin"]),
   invValidate.classRules(),
   invValidate.checkClassData,
   utilities.handleErrors(invController.addClassification)
 )
 
-router.get(
-  '/add-vehicle',
+router.get("/add-vehicle",
   checkLogin,
-  // requireRole(['Admin', 'Employee']),
+  requireRole(["Employee", "Admin"]),
   utilities.handleErrors(invController.buildAddInventory)
 )
-router.post(
-  '/add-vehicle',
+router.post("/add-vehicle",
   checkLogin,
-  // requireRole(['Admin', 'Employee']),
+  requireRole(["Employee", "Admin"]),
   invValidate.vehicleRules(),
   invValidate.checkVehicleData,
   utilities.handleErrors(invController.addInventory)
 )
 
-// ====== AJAX (tabla en Management) ======
-router.get(
-  '/getInventory/:classification_id',
-  checkLogin, // opcional
+// AJAX (tabla en Management)
+router.get("/getInventory/:classification_id",
+  checkLogin,
+  requireRole(["Employee", "Admin"]),
   utilities.handleErrors(invController.getInventoryJSON)
 )
 
-// ====== UPDATE (Step 1: mostrar formulario poblado) ======
-router.get(
-  '/edit/:inv_id',
+// UPDATE vehículo (si ya lo agregaste en W04)
+router.get("/edit/:inv_id",
   checkLogin,
-  // requireRole(['Admin','Employee']),
+  requireRole(["Employee", "Admin"]),
   utilities.handleErrors(invController.buildEditInventory)
 )
-
-// ====== UPDATE (Step 2: procesar cambios) ======
-router.post(
-  '/update',
+router.post("/update",
   checkLogin,
-  // requireRole(['Admin','Employee']),
-  invValidate.vehicleRules(),      // mismas reglas que "add"
-  invValidate.checkUpdateData,     // pero re-renderiza la vista de edición
+  requireRole(["Employee", "Admin"]),
+  invValidate.vehicleRules(),
+  invValidate.checkUpdateData,
   utilities.handleErrors(invController.updateInventory)
 )
 

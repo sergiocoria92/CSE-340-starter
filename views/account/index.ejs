@@ -1,8 +1,13 @@
-<h1>My Account</h1>
+<main>
+  <h1><%= title %></h1>
 
-<p>Welcome, <strong><%= typeof fname !== 'undefined' ? fname : (accountData?.account_firstname || 'User') %></strong>.</p>
+  <% const me = (res && res.locals && res.locals.accountData) || {}; %>
+  <h2>Welcome, <%= me.account_firstname || (me.account_email || '').split('@')[0] %></h2>
 
-<ul>
-  <li><a href="/inv">Inventory Management</a></li>
-  <li><a href="/account/logout">Log out</a></li>
-</ul>
+  <p><a href="/account/update/<%= me.account_id %>">Update account information</a></p>
+
+  <% if (me.account_type === 'Employee' || me.account_type === 'Admin') { %>
+    <h3>Inventory Management</h3>
+    <p><a href="/inv/">Go to Inventory Management</a></p>
+  <% } %>
+</main>

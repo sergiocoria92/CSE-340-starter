@@ -1,16 +1,12 @@
-<a class="skip-link" href="#main">Skip to content</a>
-
-<div class="wrap header-inner">
-  <a class="brand" href="/">CSE Motors</a>
-
-  <% const isLogged = Boolean(loggedin); %>
-  <div class="account-controls">
-    <% if (isLogged) { %>
-      <a class="account-link" href="/account" aria-label="My Account">My Account</a>
-      <a class="account-link" href="/account/logout" aria-label="Logout">Logout</a>
-    <% } else { %>
-      <a class="account-link" href="/account/login" aria-label="Login">My Account</a>
-      <a class="account-link" href="/account/register" aria-label="Register">Register</a>
-    <% } %>
-  </div>
+<% const isLogged = Boolean(loggedin); const u = (res && res.locals && res.locals.accountData) || {}; %>
+<div class="account-controls">
+  <% if (isLogged) { %>
+    <a class="account-link" href="/account" aria-label="Account">
+      Welcome <%= (u.account_firstname || u.account_email || '').toLowerCase() %>
+    </a>
+    <a class="account-link" href="/account/logout" aria-label="Logout">Logout</a>
+  <% } else { %>
+    <a class="account-link" href="/account/login" aria-label="Login">My Account</a>
+    <a class="account-link" href="/account/register" aria-label="Register">Register</a>
+  <% } %>
 </div>
