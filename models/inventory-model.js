@@ -1,5 +1,5 @@
 // models/inventory-model.js
-const pool = require('../database/')
+const db = require("../database")
 
 /** Clasificaciones (para nav y <select>) */
 async function getClassifications () {
@@ -7,20 +7,20 @@ async function getClassifications () {
     SELECT classification_id, classification_name
     FROM public.classification
     ORDER BY classification_name`
-  return pool.query(sql) // { rows: [...] }
+  return db.query(sql)
 }
 
-/** Inventario por id de clasificación (grid) */
+/** Inventario por id de clasificación (grid y JSON AJAX) */
 async function getInventoryByClassificationId (classification_id) {
   const sql = `
     SELECT i.inv_id, i.inv_make, i.inv_model, i.inv_year, i.inv_price, i.inv_thumbnail,
-           c.classification_name
+           i.classification_id, c.classification_name
     FROM public.inventory AS i
     JOIN public.classification AS c
       ON i.classification_id = c.classification_id
     WHERE i.classification_id = $1
     ORDER BY i.inv_make, i.inv_model, i.inv_year`
-  const { rows } = await pool.query(sql, [classification_id])
+  const { rows } = await db.query(sql, [classification_id])
   return rows
 }
 
@@ -32,7 +32,7 @@ async function getVehicleById (inv_id) {
     JOIN public.classification c
       ON i.classification_id = c.classification_id
     WHERE i.inv_id = $1`
-  const { rows } = await pool.query(sql, [inv_id])
+  const { rows } = await db.query(sql, [inv_id])
   return rows[0] || null
 }
 
@@ -41,7 +41,7 @@ async function addClassification (classification_name) {
   const sql = `
     INSERT INTO public.classification (classification_name)
     VALUES ($1) RETURNING classification_id`
-  const result = await pool.query(sql, [classification_name])
+  const result = await db.query(sql, [classification_name])
   return result.rowCount === 1
 }
 
@@ -65,8 +65,55 @@ async function addVehicle (d) {
     d.inv_color,
     d.classification_id
   ]
-  const result = await pool.query(sql, vals)
+  const result = await db.query(sql, vals)
   return result.rowCount === 1
+}
+
+/* ***************************
+ *  Update Inventory Data
+ * ************************** */
+async function updateInventory(
+  inv_id,
+  inv_make,
+  inv_model,
+  inv_description,
+  inv_image,
+  inv_thumbnail,
+  inv_price,
+  inv_year,
+  inv_miles,
+  inv_color,
+  classification_id
+) {
+  const sql = `
+    UPDATE public.inventory
+       SET inv_make = $1,
+           inv_model = $2,
+           inv_description = $3,
+           inv_image = $4,
+           inv_thumbnail = $5,
+           inv_price = $6,
+           inv_year = $7,
+           inv_miles = $8,
+           inv_color = $9,
+           classification_id = $10
+     WHERE inv_id = $11
+     RETURNING *`
+  const vals = [
+    inv_make,
+    inv_model,
+    inv_description,
+    inv_image,
+    inv_thumbnail,
+    inv_price,
+    inv_year,
+    inv_miles || null,
+    inv_color,
+    classification_id,
+    inv_id
+  ]
+  const { rows } = await db.query(sql, vals)
+  return rows[0] || null
 }
 
 module.exports = {
@@ -74,5 +121,6 @@ module.exports = {
   getInventoryByClassificationId,
   getVehicleById,
   addClassification,
-  addVehicle
+  addVehicle,
+  updateInventory
 }

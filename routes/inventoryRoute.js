@@ -54,4 +54,29 @@ router.post(
   utilities.handleErrors(invController.addInventory)
 )
 
+// ====== AJAX (tabla en Management) ======
+router.get(
+  '/getInventory/:classification_id',
+  checkLogin, // opcional
+  utilities.handleErrors(invController.getInventoryJSON)
+)
+
+// ====== UPDATE (Step 1: mostrar formulario poblado) ======
+router.get(
+  '/edit/:inv_id',
+  checkLogin,
+  // requireRole(['Admin','Employee']),
+  utilities.handleErrors(invController.buildEditInventory)
+)
+
+// ====== UPDATE (Step 2: procesar cambios) ======
+router.post(
+  '/update',
+  checkLogin,
+  // requireRole(['Admin','Employee']),
+  invValidate.vehicleRules(),      // mismas reglas que "add"
+  invValidate.checkUpdateData,     // pero re-renderiza la vista de edición
+  utilities.handleErrors(invController.updateInventory)
+)
+
 module.exports = router

@@ -1,12 +1,14 @@
 // utilities/index.js
 const invModel = require('../models/inventory-model')
+const { checkLogin } = require('./auth') // 👈 usa el guard central
 
 /** Nav superior */
 async function getNav () {
   const data = await invModel.getClassifications()
+  const items = data.rows || data // por si el driver devuelve rows directo
   let list = '<ul>'
   list += '<li><a href="/" title="Home page">Home</a></li>'
-  data.rows.forEach((row) => {
+  items.forEach((row) => {
     list += `<li><a href="/inv/type/${row.classification_id}"
       title="See our inventory of ${row.classification_name} vehicles">
       ${row.classification_name}</a></li>`
@@ -65,24 +67,18 @@ function buildVehicleDetail (v) {
     </article>`
 }
 
-/** Middleware: login requerido (si lo necesitas) */
-function checkLogin (req, res, next) {
-  if (req.session?.loggedin) return next()
-  req.flash('notice', 'Please log in to view that page.')
-  return res.redirect('/account/login')
-}
-
 /** Wrapper de errores async */
 const handleErrors = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next)
 
-/** <select> de clasificaciones (para Add Vehicle) */
+/** <select> de clasificaciones (para Add Vehicle y Management/AJAX) */
 async function buildClassificationList (selectedId = null) {
   const data = await invModel.getClassifications()
+  const items = data.rows || data
   let html = '<select name="classification_id" id="classificationList" required>'
-  html += "<option value=''>Choose a Classification</option>"
-  data.rows.forEach((row) => {
-    const sel = selectedId && Number(selectedId) === Number(row.classification_id) ? ' selected' : ''
+  html += "<option value=''>Select a classification</option>"
+  items.forEach((row) => {
+    const sel = Number(selectedId) === Number(row.classification_id) ? ' selected' : ''
     html += `<option value="${row.classification_id}"${sel}>${row.classification_name}</option>`
   })
   html += '</select>'
@@ -93,7 +89,8 @@ module.exports = {
   getNav,
   buildClassificationGrid,
   buildVehicleDetail,
-  checkLogin,
   handleErrors,
-  buildClassificationList
+  buildClassificationList,
+  // 👇 exporta el guard central (JWT) para quien lo necesite
+  checkLogin,
 }
