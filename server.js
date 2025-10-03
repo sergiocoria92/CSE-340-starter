@@ -1,46 +1,62 @@
 // server.js
-require("dotenv").config();
+require("dotenv").config()
 
-const path = require("path");
-const express = require("express");
-const expressLayouts = require("express-ejs-layouts");
-const session = require("express-session");
-const flash = require("connect-flash");
-const expressMessages = require("express-messages"); // 👈 alias claro
-const PgSession = require("connect-pg-simple")(session);
+const path = require("path")
+const express = require("express")
+const expressLayouts = require("express-ejs-layouts")
+const session = require("express-session")
+const flash = require("connect-flash")
+const expressMessages = require("express-messages")
+const PgSession = require("connect-pg-simple")(session)
 
-const pool = require("./database");
-const utilities = require("./utilities");
-const baseController = require("./controllers/baseController");
+const app = express()
+const NODE_ENV = process.env.NODE_ENV || "development"
 
-const NODE_ENV = process.env.NODE_ENV || "development";
-const app = express();
+// --- DB pool (tu módulo ya debe exportar un Pool/config correcto) ---
+const pool = require("./database")
 
-/* ===========================
- * Proxy (cookies seguras en prod)
- * =========================== */
-if (NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
+// En producción, si hay proxy (Railway/Render/etc.) para cookies `secure`
+if (NODE_ENV === "production") app.set("trust proxy", 1)
 
-/* ===========================
- * Views & Layouts
- * =========================== */
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
-app.use(expressLayouts);
-app.set("layout", "./layouts/layout");
+// ------------ Cookies + JWT (DEBE ir antes que los routers) ------------
+const cookieParser = require("cookie-parser")
+app.use(cookieParser(process.env.COOKIE_SECRET))
 
-/* ===========================
- * Static & Parsers
- * =========================== */
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+const jwt = require("jsonwebtoken")
+app.use((req, res, next) => {
+  const token = req.cookies?.jwt
+  if (!token) {
+    res.locals.loggedin = false
+    return next()
+  }
 
-/* ===========================
- * Session & Flash
- * =========================== */
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
+    if (err) {
+      // token inválido/expirado -> limpiar y seguir como no logueado
+      res.clearCookie("jwt")
+      res.locals.loggedin = false
+      return next()
+    }
+    // ok
+    res.locals.loggedin = true
+    res.locals.accountData = payload
+    req.account = payload
+    next()
+  })
+})
+
+// --------------------------- Views & Layouts ---------------------------
+app.set("views", path.join(__dirname, "views"))
+app.set("view engine", "ejs")
+app.use(expressLayouts)
+app.set("layout", "./layouts/layout")
+
+// ---------------------- Static & Body Parsers -------------------------
+app.use(express.static(path.join(__dirname, "public")))
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+
+// ------------------------- Session & Flash ----------------------------
 app.use(
   session({
     store: new PgSession({
@@ -48,8 +64,8 @@ app.use(
       createTableIfMissing: true,
     }),
     secret: process.env.SESSION_SECRET,
-    resave: true, // usamos flash
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     name: "sessionId",
     cookie: {
       httpOnly: true,
@@ -58,33 +74,31 @@ app.use(
       maxAge: 1000 * 60 * 30, // 30 min
     },
   })
-);
-app.use(flash());
+)
+app.use(flash())
 
-/* ===========================
- * Locals para TODAS las vistas (siempre definidos)
- * =========================== */
+// Locals globales (NO sobreescribir loggedin puesto por el middleware JWT)
 app.use((req, res, next) => {
-  res.locals.messages = expressMessages(req, res);          // 👈 función messages()
-  res.locals.loggedin = !!(req.session && req.session.loggedin); // 👈 booleano seguro
-  next();
-});
+  res.locals.messages = expressMessages(req, res)
+  if (typeof res.locals.loggedin !== "boolean") {
+    res.locals.loggedin = false
+  }
+  next()
+})
 
-/* ===========================
- * Asegurar esquema mínimo al arrancar
- * =========================== */
+// ---------------------- Bootstrap mínimo de DB ------------------------
 async function ensureCoreSchema() {
   try {
-    await pool.query("BEGIN");
+    await pool.query("BEGIN")
 
-    await pool.query(`CREATE SCHEMA IF NOT EXISTS public;`);
+    await pool.query(`CREATE SCHEMA IF NOT EXISTS public;`)
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS public.classification (
         classification_id SERIAL PRIMARY KEY,
         classification_name VARCHAR(50) UNIQUE NOT NULL
       );
-    `);
+    `)
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS public.inventory (
@@ -101,7 +115,7 @@ async function ensureCoreSchema() {
         classification_id INT NOT NULL
           REFERENCES public.classification(classification_id)
       );
-    `);
+    `)
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS public.account (
@@ -114,33 +128,32 @@ async function ensureCoreSchema() {
         account_created    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         account_updated    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `)
 
-    await pool.query("COMMIT");
-    console.log("✓ Core DB schema ensured (classification, inventory, account)");
+    await pool.query("COMMIT")
+    console.log("✓ Core DB schema ensured (classification, inventory, account)")
   } catch (err) {
-    try { await pool.query("ROLLBACK"); } catch {}
-    console.error("DB bootstrap error:", err.message);
+    try { await pool.query("ROLLBACK") } catch {}
+    console.error("DB bootstrap error:", err.message)
   }
 }
-ensureCoreSchema();
+ensureCoreSchema()
 
-/* ===========================
- * Endpoint de reinicialización (solo no-prod)
- * =========================== */
+// ---------------------- Ruta dev opcional (seed) ----------------------
 if (NODE_ENV !== "production") {
   app.get("/dev/rebuild", async (_req, res, next) => {
     try {
-      await pool.query("BEGIN");
+      await pool.query("BEGIN")
 
-      await pool.query(`CREATE SCHEMA IF NOT EXISTS public;`);
+      await pool.query(`CREATE SCHEMA IF NOT EXISTS public;`)
 
       await pool.query(`
         CREATE TABLE IF NOT EXISTS public.classification (
           classification_id SERIAL PRIMARY KEY,
           classification_name VARCHAR(50) UNIQUE NOT NULL
         );
-      `);
+      `)
+
       await pool.query(`
         CREATE TABLE IF NOT EXISTS public.inventory (
           inv_id SERIAL PRIMARY KEY,
@@ -156,7 +169,8 @@ if (NODE_ENV !== "production") {
           classification_id INT NOT NULL
             REFERENCES public.classification(classification_id)
         );
-      `);
+      `)
+
       await pool.query(`
         CREATE TABLE IF NOT EXISTS public.account (
           account_id         SERIAL PRIMARY KEY,
@@ -168,15 +182,16 @@ if (NODE_ENV !== "production") {
           account_created    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           account_updated    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
-      `);
+      `)
 
       await pool.query(`
         INSERT INTO public.classification (classification_name)
         VALUES ('Custom'), ('Sedan'), ('SUV'), ('Truck'), ('Sport')
         ON CONFLICT (classification_name) DO NOTHING;
-      `);
+      `)
 
-      await pool.query(`TRUNCATE public.inventory RESTART IDENTITY CASCADE;`);
+      await pool.query(`TRUNCATE public.inventory RESTART IDENTITY CASCADE;`)
+
       await pool.query(`
         INSERT INTO public.inventory
           (inv_make, inv_model, inv_year, inv_description, inv_image, inv_thumbnail, inv_price, inv_miles, inv_color, classification_id)
@@ -208,61 +223,54 @@ if (NODE_ENV !== "production") {
           ('Ford','Model T',1926,'Classic custom ride',
             '/images/vehicles/model-t.jpg','/images/vehicles/model-t-tn.jpg',15000,99999,'Black',
             (SELECT classification_id FROM public.classification WHERE classification_name='Custom'));
-      `);
+      `)
 
-      await pool.query("COMMIT");
-      res.send("DB rebuild OK ✅ — Tables and sample data are ready.");
+      await pool.query("COMMIT")
+      res.send("DB rebuild OK ✅ — Tables and sample data are ready.")
     } catch (err) {
-      try { await pool.query("ROLLBACK"); } catch {}
-      next(err);
+      try { await pool.query("ROLLBACK") } catch {}
+      next(err)
     }
-  });
+  })
 }
 
-/* ===========================
- * Global nav (skip /dev/*)
- * =========================== */
+// --------------------- Global nav (except /dev/*) ---------------------
+const utilities = require("./utilities")
 app.use(async (req, res, next) => {
-  if (req.path.startsWith("/dev/")) return next();
+  if (req.path.startsWith("/dev/")) return next()
   try {
-    res.locals.nav = await utilities.getNav();
+    res.locals.nav = await utilities.getNav()
   } catch {
-    res.locals.nav = '<ul><li><a href="/">Home</a></li></ul>';
+    res.locals.nav = '<ul><li><a href="/">Home</a></li></ul>'
   }
-  next();
-});
+  next()
+})
 
-/* ===========================
- * Routes
- * =========================== */
-app.get("/", baseController.buildHome);
-app.get("/health", (_req, res) => res.send("ok"));
+// ------------------------------ Routes --------------------------------
+const baseController = require("./controllers/baseController")
+app.get("/", baseController.buildHome)
+app.get("/health", (_req, res) => res.send("ok"))
 
-const invRoute = require("./routes/inventoryRoute");
-app.use("/inv", invRoute);
+app.use("/inv", require("./routes/inventoryRoute"))
+app.use("/account", require("./routes/accountRoute"))
 
-const accountRoute = require("./routes/accountRoute");
-app.use("/account", accountRoute);
-
-/* ===========================
- * 404 & 500
- * =========================== */
+// --------------------------- 404 & 500 --------------------------------
 app.use((req, res) => {
-  res.status(404);
-  res.render("errors/404", { title: "404 - Not Found", nav: res.locals.nav });
-});
+  res.status(404)
+  res.render("errors/404", { title: "404 - Not Found", nav: res.locals.nav })
+})
+
 app.use((err, req, res, _next) => {
-  console.error(err);
-  res.status(500);
+  console.error(err)
+  res.status(500)
   res.render("errors/500", {
     title: "Server Error",
     nav: res.locals.nav,
     message: NODE_ENV === "development" ? err.message : "Unexpected error",
-  });
-});
+  })
+})
 
-/* ===========================
- * Start
- * =========================== */
-const port = process.env.PORT || 5500;
-app.listen(port, () => console.log(`App listening on port ${port} (${NODE_ENV})`));
+// ------------------------------ Start ---------------------------------
+const port = process.env.PORT || 5500
+app.listen(port, () => console.log(`App listening on port ${port} (${NODE_ENV})`))
+

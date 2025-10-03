@@ -3,12 +3,14 @@
 <div class="wrap header-inner">
   <a class="brand" href="/">CSE Motors</a>
 
-  <% const isLogged = (typeof loggedin === 'boolean') ? loggedin : false; %>
-  <a
-    class="account-link"
-    href="<%= isLogged ? '/account/' : '/account/login' %>"
-    aria-label="My Account"
-  >
-    My Account
-  </a>
+  <% const isLogged = Boolean(loggedin); %>
+  <div class="account-controls">
+    <% if (isLogged) { %>
+      <a class="account-link" href="/account" aria-label="My Account">My Account</a>
+      <a class="account-link" href="/account/logout" aria-label="Logout">Logout</a>
+    <% } else { %>
+      <a class="account-link" href="/account/login" aria-label="Login">My Account</a>
+      <a class="account-link" href="/account/register" aria-label="Register">Register</a>
+    <% } %>
+  </div>
 </div>

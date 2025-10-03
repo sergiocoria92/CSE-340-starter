@@ -1,23 +1,36 @@
 // routes/accountRoute.js
 const express = require("express")
 const router = express.Router()
+
 const accountController = require("../controllers/accountController")
 const utilities = require("../utilities")
-const { registrationRules, checkRegistrationData } = require("../utilities/account-validation")
+const regValidate = require("../utilities/account-validation")
+const { checkLogin } = require("../utilities/auth") // guard basado en JWT
 
+// Vistas
 router.get("/login", utilities.handleErrors(accountController.buildLogin))
-router.post("/login", utilities.handleErrors(accountController.loginProcess))
-
 router.get("/register", utilities.handleErrors(accountController.buildRegister))
+
+// Proceso de login (validación -> controlador)
 router.post(
-  "/register",
-  registrationRules(),          // 1) reglas
-  checkRegistrationData,        // 2) si hay errores -> re-render
-  utilities.handleErrors(accountController.registerProcess) // 3) si OK -> crear cuenta
+  "/login",
+  regValidate.loginRules(),
+  regValidate.checkLoginData,
+  utilities.handleErrors(accountController.accountLogin)
 )
 
-router.get("/", utilities.checkLogin, accountController.accountIndex)
-router.get("/logout", utilities.checkLogin, accountController.logout)
+// Registro
+router.post(
+  "/register",
+  regValidate.registrationRules(),
+  regValidate.checkRegistrationData,
+  utilities.handleErrors(accountController.registerProcess)
+)
+
+// Panel de cuenta (protegido)
+router.get("/", checkLogin, utilities.handleErrors(accountController.accountIndex))
+
+// Logout (protegido)
+router.get("/logout", checkLogin, utilities.handleErrors(accountController.logout))
 
 module.exports = router
-

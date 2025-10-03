@@ -1,3 +1,8 @@
 <h1>My Account</h1>
-<p>Welcome, <strong><%= fname %></strong>.</p>
-<p><a href="/account/logout">Log out</a></p>
+
+<p>Welcome, <strong><%= typeof fname !== 'undefined' ? fname : (accountData?.account_firstname || 'User') %></strong>.</p>
+
+<ul>
+  <li><a href="/inv">Inventory Management</a></li>
+  <li><a href="/account/logout">Log out</a></li>
+</ul>

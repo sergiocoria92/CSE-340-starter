@@ -3,32 +3,55 @@ const express = require('express')
 const router = express.Router()
 const invController = require('../controllers/invController')
 const invValidate = require('../utilities/inventory-validation')
+const utilities = require('../utilities')
+const { checkLogin, requireRole } = require('../utilities/auth')
 
-// Inventario por clasificación
-router.get('/type/:classificationId', invController.buildByClassificationId)
-
-// Detalle por id
-router.get('/detail/:invId', invController.buildByInventoryId)
-
-// Vista de administración
-router.get('/', invController.buildManagement)
-
-// Agregar clasificación
-router.get('/add-classification', invController.buildAddClassification)
-router.post(
-  '/add-classification',
-  invValidate.classRules(),
-  invValidate.checkClassData,
-  invController.addClassification
+// Público
+router.get(
+  '/type/:classificationId',
+  utilities.handleErrors(invController.buildByClassificationId)
+)
+router.get(
+  '/detail/:invId',
+  utilities.handleErrors(invController.buildByInventoryId)
 )
 
-// Agregar vehículo
-router.get('/add-vehicle', invController.buildAddInventory)
+// Protegido (puedes activar roles si tu instructor lo pide)
+router.get(
+  '/',
+  checkLogin,
+  // requireRole(['Admin', 'Employee']),
+  utilities.handleErrors(invController.buildManagement)
+)
+
+router.get(
+  '/add-classification',
+  checkLogin,
+  // requireRole(['Admin', 'Employee']),
+  utilities.handleErrors(invController.buildAddClassification)
+)
+router.post(
+  '/add-classification',
+  checkLogin,
+  // requireRole(['Admin', 'Employee']),
+  invValidate.classRules(),
+  invValidate.checkClassData,
+  utilities.handleErrors(invController.addClassification)
+)
+
+router.get(
+  '/add-vehicle',
+  checkLogin,
+  // requireRole(['Admin', 'Employee']),
+  utilities.handleErrors(invController.buildAddInventory)
+)
 router.post(
   '/add-vehicle',
+  checkLogin,
+  // requireRole(['Admin', 'Employee']),
   invValidate.vehicleRules(),
   invValidate.checkVehicleData,
-  invController.addInventory
+  utilities.handleErrors(invController.addInventory)
 )
 
 module.exports = router
