@@ -251,6 +251,36 @@ const baseController = require("./controllers/baseController")
 app.get("/", baseController.buildHome)
 app.get("/health", (_req, res) => res.send("ok"))
 
+
+
+// --- DIAGNÓSTICOS TEMPORALES ---
+// Confirma que el proceso está vivo
+app.get("/diag/health", (_req, res) => res.type("text").send("ok"))
+
+// Confirma conexión a Postgres
+app.get("/diag/db", async (_req, res) => {
+  try {
+    const r = await pool.query("SELECT 1 as ok")
+    res.type("json").send({ db: "ok", result: r.rows })
+  } catch (e) {
+    res.status(500).type("text").send("DB error: " + (e && e.message))
+  }
+})
+
+// Prueba lectura básica usada por el nav
+app.get("/diag/classes", async (_req, res) => {
+  try {
+    const r = await pool.query("SELECT classification_id, classification_name FROM public.classification ORDER BY 1 LIMIT 5")
+    res.type("json").send({ rows: r.rows })
+  } catch (e) {
+    res.status(500).type("text").send("Classes error: " + (e && e.message))
+  }
+})
+
+
+
+
+
 app.use("/inv", require("./routes/inventoryRoute"))
 app.use("/account", require("./routes/accountRoute"))
 
