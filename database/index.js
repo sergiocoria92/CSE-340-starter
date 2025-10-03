@@ -1,13 +1,16 @@
 // database/index.js
-const { Pool } = require("pg")
-require("dotenv").config()
+const { Pool } = require('pg')
 
-// Use SSL only for Render (or production)
-const isRender = /render\.com/.test(process.env.DATABASE_URL || "")
+const isProd = process.env.NODE_ENV === 'production'
+const connectionString = process.env.DATABASE_URL
+if (!connectionString) {
+  throw new Error('DATABASE_URL is not set')
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: isRender ? { rejectUnauthorized: false } : false,
+  connectionString,
+  // Render/Heroku necesitan TLS. Evita error de CA self-signed.
+  ssl: isProd ? { rejectUnauthorized: false } : false,
 })
 
-// Export the actual Pool instance
 module.exports = pool
