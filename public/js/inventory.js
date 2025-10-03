@@ -1,48 +1,56 @@
-'use strict'
+// public/js/inventory.js
+(() => {
+  const select = document.getElementById("classificationList")
+  const table  = document.getElementById("inventoryDisplay")
 
-// Get a list of items in inventory based on the classification_id
-let classificationList = document.querySelector("#classificationList")
+  if (!select || !table) return
 
-if (classificationList) {
-  classificationList.addEventListener("change", function () {
-    let classification_id = classificationList.value
-    console.log(`classification_id is: ${classification_id}`)
+  async function loadInventory() {
+    const classId = select.value
+    table.innerHTML = ""
 
-    let classIdURL = "/inv/getInventory/" + classification_id
-    fetch(classIdURL)
-      .then(function (response) {
-        if (response.ok) {
-          return response.json()
-        }
-        throw Error("Network response was not OK")
-      })
-      .then(function (data) {
-        console.log(data)
-        buildInventoryList(data)
-      })
-      .catch(function (error) {
-        console.log("There was a problem: ", error.message)
-      })
-  })
-}
+    if (!classId) return
 
-// Build inventory items into HTML table components and inject into DOM
-function buildInventoryList(data) {
-  let inventoryDisplay = document.getElementById("inventoryDisplay")
-  // Set up the table labels
-  let dataTable = "<thead>"
-  dataTable += "<tr><th>Vehicle Name</th><td>&nbsp;</td><td>&nbsp;</td></tr>"
-  dataTable += "</thead>"
-  // Set up the table body
-  dataTable += "<tbody>"
-  // Iterate over all vehicles in the array and put each in a row
-  data.forEach(function (element) {
-    console.log(element.inv_id + ", " + element.inv_model)
-    dataTable += `<tr><td>${element.inv_make} ${element.inv_model}</td>`
-    dataTable += `<td><a href='/inv/edit/${element.inv_id}' title='Click to update'>Modify</a></td>`
-    dataTable += `<td><a href='/inv/delete/${element.inv_id}' title='Click to delete'>Delete</a></td></tr>`
-  })
-  dataTable += "</tbody>"
-  // Display the contents in the Inventory Management view
-  inventoryDisplay.innerHTML = dataTable
-}
+    try {
+      const res = await fetch(`/inv/getInventory/${encodeURIComponent(classId)}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const rows = await res.json()
+
+      if (!Array.isArray(rows) || rows.length === 0) {
+        table.innerHTML = `<tbody><tr><td>No inventory found.</td></tr></tbody>`
+        return
+      }
+
+      let html = `
+        <thead>
+          <tr>
+            <th>Make</th>
+            <th>Model</th>
+            <th>Year</th>
+            <th>Price</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>`
+      for (const r of rows) {
+        html += `
+          <tr>
+            <td>${r.inv_make}</td>
+            <td>${r.inv_model}</td>
+            <td>${r.inv_year ?? ""}</td>
+            <td>${r.inv_price ?? ""}</td>
+            <td><a href="/inv/edit/${r.inv_id}">Edit</a></td>
+          </tr>`
+      }
+      html += `</tbody>`
+      table.innerHTML = html
+    } catch (err) {
+      console.error(err)
+      table.innerHTML = `<tbody><tr><td>Error loading inventory.</td></tr></tbody>`
+    }
+  }
+
+  // Cargar al cambiar y si ya hay algo seleccionado
+  select.addEventListener("change", loadInventory)
+  if (select.value) loadInventory()
+})()

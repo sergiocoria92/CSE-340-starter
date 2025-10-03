@@ -1,13 +1,17 @@
-<main>
-  <h1><%= title %></h1>
+<h1><%= title %></h1>
 
-  <% const me = (res && res.locals && res.locals.accountData) || {}; %>
-  <h2>Welcome, <%= me.account_firstname || (me.account_email || '').split('@')[0] %></h2>
+<p>Welcome, <%= fname %>.</p>
 
-  <p><a href="/account/update/<%= me.account_id %>">Update account information</a></p>
+<ul>
+  <li><a href="/inv">Inventory Management</a></li>
+  <li>
+    <a href="/account/update/<%= accountData && accountData.account_id %>">
+      Update account information
+    </a>
+  </li>
+  <li><a href="/account/logout">Log out</a></li>
+</ul>
 
-  <% if (me.account_type === 'Employee' || me.account_type === 'Admin') { %>
-    <h3>Inventory Management</h3>
-    <p><a href="/inv/">Go to Inventory Management</a></p>
-  <% } %>
-</main>
+<% if (typeof message !== 'undefined' && message && message.length) { %>
+  <div class="notice"><%= message %></div>
+<% } %>

@@ -2,9 +2,10 @@
 <main class="add-edit-vehicle">
   <h1><%= title %></h1>
 
-  <% if (message && message.length) { %>
-    <div class="notice"><%= message %></div>
-  <% } %>
+  <% if (typeof message !== 'undefined' && message && message.length) { %>
+  <div class="notice"><%= message %></div>
+<% } %>
+
 
   <% 
     // Soporta ambos formatos: errors como array o como { errors: [...] }
